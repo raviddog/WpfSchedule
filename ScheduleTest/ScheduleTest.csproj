@@ -98,9 +98,9 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WpfAppointmentView\WpfAppointmentView.csproj">
+    <ProjectReference Include="..\WpfAppointmentView\WpfSchedule.csproj">
       <Project>{52f0d6c7-772a-493d-8d6a-369204f9085f}</Project>
-      <Name>WpfAppointmentView</Name>
+      <Name>WpfSchedule</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

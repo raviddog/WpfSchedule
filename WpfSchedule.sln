@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfAppointmentView", "WpfAppointmentView\WpfAppointmentView.csproj", "{52F0D6C7-772A-493D-8D6A-369204F9085F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfSchedule", "WpfAppointmentView\WpfSchedule.csproj", "{52F0D6C7-772A-493D-8D6A-369204F9085F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleTest", "ScheduleTest\ScheduleTest.csproj", "{15ADD9AA-5BE6-4349-8C52-A64B8CDFFCD0}"
 	ProjectSection(ProjectDependencies) = postProject
