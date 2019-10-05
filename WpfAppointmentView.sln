@@ -5,6 +5,11 @@ VisualStudioVersion = 15.0.28307.329
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WpfAppointmentView", "WpfAppointmentView\WpfAppointmentView.csproj", "{52F0D6C7-772A-493D-8D6A-369204F9085F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScheduleTest", "ScheduleTest\ScheduleTest.csproj", "{15ADD9AA-5BE6-4349-8C52-A64B8CDFFCD0}"
+	ProjectSection(ProjectDependencies) = postProject
+		{52F0D6C7-772A-493D-8D6A-369204F9085F} = {52F0D6C7-772A-493D-8D6A-369204F9085F}
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +20,10 @@ Global
 		{52F0D6C7-772A-493D-8D6A-369204F9085F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{52F0D6C7-772A-493D-8D6A-369204F9085F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{52F0D6C7-772A-493D-8D6A-369204F9085F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15ADD9AA-5BE6-4349-8C52-A64B8CDFFCD0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15ADD9AA-5BE6-4349-8C52-A64B8CDFFCD0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15ADD9AA-5BE6-4349-8C52-A64B8CDFFCD0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15ADD9AA-5BE6-4349-8C52-A64B8CDFFCD0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

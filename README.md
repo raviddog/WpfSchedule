@@ -6,7 +6,7 @@ Inspired by [Oscar de los Santos' WPF Scheduler Control](http://www.oscardelossa
 
 ## Features
 
-- Day, Week and Month view
+- Day view
 - Not much else
 
 ## Todo
