@@ -98,7 +98,7 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WpfAppointmentView\WpfSchedule.csproj">
+    <ProjectReference Include="..\WpfSchedule\WpfSchedule.csproj">
       <Project>{52f0d6c7-772a-493d-8d6a-369204f9085f}</Project>
       <Name>WpfSchedule</Name>
     </ProjectReference>
