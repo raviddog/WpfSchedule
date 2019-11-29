@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Medical_Sys
+namespace WpfSchedule
 {
     /// <summary>
     /// Interaction logic for ScheduleDay.xaml
@@ -18,8 +18,10 @@ namespace Medical_Sys
             set {
                 currentDate = value.Date;
                 _guitTitle.Content = string.Format("{0} {1:00}/{2}", CurrentDate.DayOfWeek.ToString(), CurrentDate.Day, CurrentDate.Month);
+                ChangeDate();
             }
         }
+
         public TimeSpan Interval { get; set; }
         public bool FitToSize { get; set; }
         public TimeSpan TimeStart { get; set; }
@@ -49,24 +51,29 @@ namespace Medical_Sys
                 if(darkTheme) {
                     _guicGridTimeline.BorderBrush = Brushes.AntiqueWhite;
                     ScheduleItem.DefaultBorderColor = Brushes.AntiqueWhite;
+                    foreach(ScheduleItem item in Items) {
+                        item.Panel.BorderBrush = Brushes.AntiqueWhite;
+                    }
                 } else {
                     _guicGridTimeline.BorderBrush = Brushes.Black;
                     ScheduleItem.DefaultBorderColor = Brushes.Black;
+                    foreach(ScheduleItem item in Items) {
+                        item.Panel.BorderBrush = Brushes.Black;
+                    }
                 }
             }
         }
 
-        public List<ScheduleItem> Items = new List<ScheduleItem>();
-        private List<Border> CanvasElements = new List<Border>();
+        private List<ScheduleItem> Items;
 
         public event EventHandler ScheduleItemClick;
 
-        private static double TimeVisualIntervalHeight = 50.0;      //minimum height between displaying the time interval
-
+        private static double TimeVisualIntervalHeight = 50.0;      //minimum height between displaying the time interval        
 
         public ScheduleDay()
         {
             InitializeComponent();
+            Items = new List<ScheduleItem>();
 
             //assign event handlers
             _guicCanvas.MouseLeftButtonDown += OnScheduleItemClick;
@@ -83,15 +90,52 @@ namespace Medical_Sys
             Redraw();
         }
 
+        public void Add(ScheduleItem item)
+        {
+            double totalSeconds = TimeEnd.TotalSeconds - TimeStart.TotalSeconds;
+            item.GeneratePanel(_guicCanvas.ActualWidth, _guicCanvas.ActualHeight, TimeStart.TotalSeconds, TimeEnd.TotalSeconds, totalSeconds);
+            Items.Add(item);
+        }
+
+        public void Remove(ScheduleItem item)
+        {
+            Items.Remove(item);
+        }
+
+        public void Clear()
+        {
+            _guicCanvas.Children.Clear();
+            Items.Clear();
+        }
+
+        public IReadOnlyCollection<ScheduleItem> GetItems()
+        {
+            return Items.AsReadOnly();
+        }
+
+
         private void OnScheduleItemClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
         {
-            int i;  //find clicked item
-            for(i = 0; i < CanvasElements.Count && !CanvasElements[i].IsMouseOver; i++) { }
-            if(i < CanvasElements.Count && (CanvasElements[i].DataContext as ScheduleItem).Clickable) {
-                ScheduleItemClick?.Invoke(CanvasElements[i].DataContext, EventArgs.Empty);
+            int i = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
+            for(; i < Items.Count && !Items[i].Panel.IsMouseOver; i++) { }
+            if(i < Items.Count && Items[i].Clickable) {
+                ScheduleItemClick?.Invoke(Items[i], EventArgs.Empty);
             } else {
                     //nothing was clicked, fire event with no object
                 ScheduleItemClick?.Invoke(null, EventArgs.Empty);
+            }
+        }
+
+        private void ChangeDate()
+        {
+            _guicCanvas.Children.Clear();
+
+            int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
+            if(StartItem > -1) {
+                for(int i = StartItem; i < Items.Count && Items[i].Start < CurrentDate.Add(TimeEnd); i++) {
+                    _guicCanvas.Children.Add(Items[i].Panel);
+
+                }
             }
         }
 
@@ -100,7 +144,6 @@ namespace Medical_Sys
             _guicGrid.Children.Clear();
             _guicGrid.RowDefinitions.Clear();
             _guicCanvas.Children.Clear();
-            CanvasElements.Clear();
 
             this.UpdateLayout();
 
@@ -152,66 +195,17 @@ namespace Medical_Sys
 
             //draw items
             Items.Sort(ScheduleItem.SortByStart);
-            int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
-            DateTime EndTime = CurrentDate.Add(TimeEnd);
             double totalSeconds = TimeEnd.TotalSeconds - TimeStart.TotalSeconds;
+
+            foreach(ScheduleItem item in Items) {
+                item.GeneratePanel(_guicCanvas.ActualWidth, _guicCanvas.ActualHeight, TimeStart.TotalSeconds, TimeEnd.TotalSeconds, totalSeconds);
+            }
+
+            int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
             if(StartItem > -1) {
-                for(int i = StartItem; i < Items.Count && Items[i].Start < EndTime; i++) {
-                    Border apptItem = new Border
-                    {
-                        BorderThickness = new Thickness(1.0),
-                        BorderBrush = Items[i].BorderColor,
-                        Background = Items[i].FillColor
-                    };
-
-                    double yPos = (Items[i].Start.TimeOfDay.TotalSeconds - TimeStart.TotalSeconds) / totalSeconds * canvasHeight;
-
-                    if(_guicCanvas.ActualWidth < 16) {
-                        apptItem.Width = 0.0;
-                    } else {
-                        apptItem.Width = _guicCanvas.ActualWidth - 16.0;
-                    }
-                    if(Items[i].End < Items[i].Start) {
-                        //end time is before start time
-                        apptItem.Height = 0.0;
-                    } else {
-                        apptItem.Height = (Items[i].End.TimeOfDay.TotalSeconds - TimeStart.TotalSeconds) / totalSeconds * canvasHeight - yPos;
-                    }
-                    Canvas.SetLeft(apptItem, 8);
-                    Canvas.SetTop(apptItem, yPos);
-
-                    StackPanel panel = new StackPanel
-                    {
-                        Orientation = Orientation.Vertical,
-                        HorizontalAlignment = HorizontalAlignment.Stretch
-                    };
-
-                    Label apptTime = new Label
-                    {
-                        Margin = new Thickness(1.0, 0.0, 0.0, 0.0),
-                        FontSize = 11,
-                        Padding = new Thickness(0.0),
-                        Foreground = Brushes.Black
-                    };
-
-                    apptTime.SetBinding(Label.ContentProperty, "Time");
-
-                    Label apptDesc = new Label
-                    {
-                        Margin = new Thickness(1.0, 0.0, 0.0, 0.0),
-                        FontSize = 11,
-                        Padding = new Thickness(0.0),
-                        Foreground = Brushes.Black
-                    };
-
-                    apptDesc.SetBinding(Label.ContentProperty, "Title");
-
-                    panel.Children.Add(apptTime);
-                    panel.Children.Add(apptDesc);
-                    apptItem.Child = panel;
-                    apptItem.DataContext = Items[i];
-                    _guicCanvas.Children.Add(apptItem);
-                    CanvasElements.Add(apptItem);
+                for(int i = StartItem; i < Items.Count && Items[i].Start < CurrentDate.Add(TimeEnd); i++) {
+                    _guicCanvas.Children.Add(Items[i].Panel);
+                    
                 }
             }
         }
@@ -223,15 +217,16 @@ namespace Medical_Sys
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
 
-        public string Time { get => string.Format("{0} - {1}", Start.ToShortTimeString(), End.ToShortTimeString()); }
-
+        internal string Time { get => string.Format("{0} - {1}", Start.ToShortTimeString(), End.ToShortTimeString()); }
+        internal Border Panel;
+        
         public string Title { get; set; }
         public string Description { get; set; }
         public bool Clickable { get; set; }
         public Brush BorderColor { get; set; }
         public Brush FillColor { get; set; }
 
-        internal static Brush DefaultBorderColor = Brushes.Black;
+        public static Brush DefaultBorderColor = Brushes.Black;
         public static Brush DefaultFillColor = Brushes.LightGreen;
 
         public readonly Guid ID;
@@ -245,6 +240,54 @@ namespace Medical_Sys
             BorderColor = DefaultBorderColor;
             FillColor = DefaultFillColor;
             Clickable = true;
+        }
+
+        internal void GeneratePanel(double width, double height, double secondsStart, double secondsEnd, double secondsTotal)
+        {
+            Panel = new Border
+            {
+                BorderThickness = new Thickness(1.0),
+                BorderBrush = BorderColor,
+                Background = FillColor
+            };
+
+            double yPos = (Start.TimeOfDay.TotalSeconds - secondsStart) / secondsTotal * height;
+
+            Panel.Width = width > 16 ? width : 0.0;
+            Panel.Height = End < Start ? 0.0 : (End.TimeOfDay.TotalSeconds - secondsStart) / secondsTotal * height - yPos;
+
+            Canvas.SetLeft(Panel, 8);
+            Canvas.SetTop(Panel, yPos);
+
+            StackPanel panel = new StackPanel
+            {
+                Orientation = Orientation.Vertical,
+                HorizontalAlignment = HorizontalAlignment.Stretch
+            };
+
+            Label apptTime = new Label
+            {
+                Margin = new Thickness(1.0, 0.0, 0.0, 0.0),
+                FontSize = 11,
+                Padding = new Thickness(0.0),
+                Foreground = Brushes.Black
+            };
+
+            apptTime.Content = Time;
+
+            Label apptDesc = new Label
+            {
+                Margin = new Thickness(1.0, 0.0, 0.0, 0.0),
+                FontSize = 11,
+                Padding = new Thickness(0.0),
+                Foreground = Brushes.Black
+            };
+
+            apptDesc.Content = Title;
+
+            panel.Children.Add(apptTime);
+            panel.Children.Add(apptDesc);
+            Panel.Child = panel;
         }
 
         internal static int SortByStart(ScheduleItem x, ScheduleItem y)

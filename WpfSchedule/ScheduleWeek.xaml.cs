@@ -4,7 +4,7 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 
-namespace Medical_Sys
+namespace WpfSchedule
 {
     /// <summary>
     /// Interaction logic for ScheduleMonth.xaml
