@@ -51,43 +51,38 @@ namespace WpfSchedule
                 if(darkTheme) {
                     _guicGridTimeline.BorderBrush = Brushes.AntiqueWhite;
                     ScheduleItem.DefaultBorderColor = Brushes.AntiqueWhite;
+                    foreach(ScheduleItem item in Items) {
+                        item.Panel.BorderBrush = Brushes.AntiqueWhite;
+                    }
                 } else {
                     _guicGridTimeline.BorderBrush = Brushes.Black;
                     ScheduleItem.DefaultBorderColor = Brushes.Black;
+                    foreach(ScheduleItem item in Items) {
+                        item.Panel.BorderBrush = Brushes.Black;
+                    }
                 }
             }
         }
 
-        public List<ScheduleItem> Items = new List<ScheduleItem>();
-        private List<Border> CanvasElements = new List<Border>();
-        public event EventHandler ScheduleItemClick;
-        private static double TimeVisualIntervalHeight = 50.0;
-
-        private void OnScheduleItemClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
-        {
-            int i;  //find clicked item
-            for(i = 0; i < CanvasElements.Count && !CanvasElements[i].IsMouseOver; i++) { }
-            if(i < CanvasElements.Count && (CanvasElements[i].DataContext as ScheduleItem).Clickable) {
-                ScheduleItemClick?.Invoke(CanvasElements[i].DataContext, EventArgs.Empty);
-            } else {
-                //nothing was clicked, fire event with no object
-                ScheduleItemClick?.Invoke(null, EventArgs.Empty);
-            }
-        }
-
+        private List<ScheduleItem> Items;
         private List<Canvas> guicCanvas = new List<Canvas>();
+
+        public event EventHandler ScheduleItemClick;
+
+        private static double TimeVisualIntervalHeight = 50.0;
 
         public ScheduleWeek()
         {
             InitializeComponent();
+            Items = new List<ScheduleItem>();
 
+            guicCanvas.Add(_guicCanvasSunday);
             guicCanvas.Add(_guicCanvasMonday);
             guicCanvas.Add(_guicCanvasTuesday);
             guicCanvas.Add(_guicCanvasWednesday);
             guicCanvas.Add(_guicCanvasThursday);
             guicCanvas.Add(_guicCanvasFriday);
             guicCanvas.Add(_guicCanvasSaturday);
-            guicCanvas.Add(_guicCanvasSunday);
 
             foreach(Canvas c in guicCanvas) {
                 c.MouseLeftButtonDown += OnScheduleItemClick;
@@ -100,13 +95,70 @@ namespace WpfSchedule
             FitToSize = false;
             IntervalHeight = 35.0;
             DarkTheme = false;
+
+            Redraw();
+        }
+
+        public void Add(ScheduleItem item)
+        {
+            double totalSeconds = TimeEnd.TotalSeconds - TimeStart.TotalSeconds;
+            item.GeneratePanel(guicCanvas[(int)item.Start.DayOfWeek].ActualWidth, guicCanvas[(int)item.Start.DayOfWeek].ActualHeight, TimeStart.TotalSeconds, TimeEnd.TotalSeconds, totalSeconds);
+            Items.Add(item);
+        }
+
+        public void Remove(ScheduleItem item)
+        {
+            Items.Remove(item);
+        }
+
+        public void Remove(Guid id)
+        {
+            Items.RemoveAll(x => x.ID == id);
+        }
+
+        public void Clear()
+        {
+            for(int i = 0; i < 7; i++) {
+                guicCanvas[i].Children.Clear();
+            }
+            Items.Clear();
+        }
+
+        public IReadOnlyCollection<ScheduleItem> GetItems()
+        {
+            return Items.AsReadOnly();
+        }
+
+        private void OnScheduleItemClick(object sender, System.Windows.Input.MouseButtonEventArgs e)
+        {
+            int i = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
+            for(; i < Items.Count && !Items[i].Panel.IsMouseOver; i++) { }
+            if(i < Items.Count && Items[i].Clickable) {
+                ScheduleItemClick?.Invoke(Items[i], EventArgs.Empty);
+            } else {
+                //nothing was clicked, fire event with no object
+                ScheduleItemClick?.Invoke(null, EventArgs.Empty);
+            }
+        }
+
+        private void ChangeDate()
+        {
+            for(int i = 0; i < 7; i++) {
+                guicCanvas[i].Children.Clear();
+            }
+
+            int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
+            if(StartItem > -1) {
+                for(int i = StartItem; i < Items.Count && Items[i].Start < CurrentDate.Add(TimeEnd); i++) {
+                    guicCanvas[(int)Items[i].Start.DayOfWeek].Children.Add(Items[i].Panel);
+                }
+            }
         }
 
         public void Redraw()
         {
             _guicGrid.Children.Clear();
             _guicGrid.RowDefinitions.Clear();
-            CanvasElements.Clear();
             for(int i = 0; i < 7; i++) {
                 guicCanvas[i].Children.Clear();
             }
@@ -173,68 +225,15 @@ namespace WpfSchedule
             //draw items
             Items.Sort(ScheduleItem.SortByStart);
             double totalSeconds = TimeEnd.TotalSeconds - TimeStart.TotalSeconds;
-            for(int j = 0; j < 7; j++) {
-                int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart.Add(new TimeSpan(j, 0, 0, 0))));
-                if(StartItem > -1) {
-                    DateTime EndTime = CurrentDate.Add(TimeEnd.Add(new TimeSpan(j, 0, 0, 0)));
-                    for(int i = StartItem; i < Items.Count && Items[i].Start < EndTime; i++) {
-                        Border apptItem = new Border
-                        {
-                            BorderThickness = new Thickness(1.0),
-                            BorderBrush = Items[i].BorderColor,
-                            Background = Items[i].FillColor
-                        };
 
-                        double yPos = (Items[i].Start.TimeOfDay.TotalSeconds - TimeStart.TotalSeconds) / totalSeconds * canvasHeight;
+            foreach(ScheduleItem item in Items) {
+                item.GeneratePanel(guicCanvas[(int)item.Start.DayOfWeek].ActualWidth, guicCanvas[(int)item.Start.DayOfWeek].ActualHeight, TimeStart.TotalSeconds, TimeEnd.TotalSeconds, totalSeconds);
+            }
 
-                        if(guicCanvas[j].ActualWidth < 16) {
-                            apptItem.Width = 0.0;
-                        } else {
-                            apptItem.Width = guicCanvas[j].ActualWidth - 16.0;
-                        }
-
-                        if(Items[i].End < Items[i].Start) {
-                            //end time is before start time
-                            apptItem.Height = 0.0;
-                        } else {
-                            apptItem.Height = (Items[i].End.TimeOfDay.TotalSeconds - TimeStart.TotalSeconds) / totalSeconds * canvasHeight - yPos;
-                        }
-                        Canvas.SetLeft(apptItem, 8);
-                        Canvas.SetTop(apptItem, yPos);
-
-                        StackPanel panel = new StackPanel
-                        {
-                            Orientation = Orientation.Vertical,
-                            HorizontalAlignment = HorizontalAlignment.Stretch
-                        };
-
-                        Label apptTime = new Label
-                        {
-                            Margin = new Thickness(1.0, 0.0, 0.0, 0.0),
-                            FontSize = 11,
-                            Padding = new Thickness(0.0),
-                            Foreground = Brushes.Black
-                        };
-
-                        apptTime.SetBinding(Label.ContentProperty, "Time");
-
-                        Label apptDesc = new Label
-                        {
-                            Margin = new Thickness(1.0, 0.0, 0.0, 0.0),
-                            FontSize = 11,
-                            Padding = new Thickness(0.0),
-                            Foreground = Brushes.Black
-                        };
-
-                        apptDesc.SetBinding(Label.ContentProperty, "Title");
-
-                        panel.Children.Add(apptTime);
-                        panel.Children.Add(apptDesc);
-                        apptItem.Child = panel;
-                        apptItem.DataContext = Items[i];
-                        guicCanvas[j].Children.Add(apptItem);
-                        CanvasElements.Add(apptItem);
-                    }
+            int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
+            if(StartItem > -1) {
+                for(int i = StartItem; i < Items.Count && Items[i].Start < CurrentDate.Add(TimeEnd); i++) {
+                    guicCanvas[(int)Items[i].Start.DayOfWeek].Children.Add(Items[i].Panel);
                 }
             }
         }

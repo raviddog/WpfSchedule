@@ -102,6 +102,11 @@ namespace WpfSchedule
             Items.Remove(item);
         }
 
+        public void Remove(Guid id)
+        {
+            Items.RemoveAll(x => x.ID == id);
+        }
+
         public void Clear()
         {
             _guicCanvas.Children.Clear();
