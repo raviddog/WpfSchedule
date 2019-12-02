@@ -10,7 +10,9 @@
             <RowDefinition Height="32"/>
             <RowDefinition Height="*"/>
         </Grid.RowDefinitions>
-        <Label x:Name="_guitTitle" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        <Border x:Name="_guicTop" BorderThickness="0,0,0,1" BorderBrush="Black">
+            <Label x:Name="_guitTitle" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+        </Border>
         <ScrollViewer Grid.Row="1" x:Name="_guicScroll"
                       HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
             <Grid>

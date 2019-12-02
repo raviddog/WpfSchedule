@@ -50,12 +50,14 @@ namespace WpfSchedule
                 darkTheme = value;
                 if(darkTheme) {
                     _guicGridTimeline.BorderBrush = Brushes.AntiqueWhite;
+                    _guicTop.BorderBrush = Brushes.AntiqueWhite;
                     ScheduleItem.DefaultBorderColor = Brushes.AntiqueWhite;
                     foreach(ScheduleItem item in Items) {
                         item.Panel.BorderBrush = Brushes.AntiqueWhite;
                     }
                 } else {
                     _guicGridTimeline.BorderBrush = Brushes.Black;
+                    _guicTop.BorderBrush = Brushes.Black;
                     ScheduleItem.DefaultBorderColor = Brushes.Black;
                     foreach(ScheduleItem item in Items) {
                         item.Panel.BorderBrush = Brushes.Black;
@@ -95,6 +97,9 @@ namespace WpfSchedule
             double totalSeconds = TimeEnd.TotalSeconds - TimeStart.TotalSeconds;
             item.GeneratePanel(_guicCanvas.ActualWidth, _guicCanvas.ActualHeight, TimeStart.TotalSeconds, TimeEnd.TotalSeconds, totalSeconds);
             Items.Add(item);
+            if(item.Start >= CurrentDate.Add(TimeStart) && item.Start < CurrentDate.Add(TimeEnd)) {
+                _guicCanvas.Children.Add(item.Panel);
+            }
         }
 
         public void Remove(ScheduleItem item)

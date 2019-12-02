@@ -6,10 +6,98 @@
         xmlns:local="clr-namespace:ScheduleTest"
         xmlns:schedule="clr-namespace:WpfSchedule;assembly=WpfSchedule"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="640">
+        Title="MainWindow" Height="540" Width="900">
     <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="Auto"/>
+        </Grid.ColumnDefinitions>
         <TabControl>
-            
+            <TabItem Header="Day">
+                <schedule:ScheduleDay x:Name="guicScheduleDay" ScheduleItemClick="GuicSchedule_ScheduleItemClick"/>
+            </TabItem>
+            <TabItem Header="Week">
+                <schedule:ScheduleWeek x:Name="guicScheduleWeek"/>
+            </TabItem>
         </TabControl>
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <GroupBox Header="Date">
+                <StackPanel Orientation="Vertical">
+                    <DatePicker x:Name="guidDate" SelectedDateChanged="GuidDate_SelectedDateChanged"/>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <Button Content="Prev" x:Name="guifDatePrev" Click="GuifDatePrev_Click" Grid.Column="0" Margin="4"/>
+                        <Button Content="Today" x:Name="guifDateToday" Click="GuifDateToday_Click" Grid.Column="1" Margin="4"/>
+                        <Button Content="Next" x:Name="guifDateNext" Click="GuifDateNext_Click" Grid.Column="2" Margin="4"/>
+                    </Grid>
+                </StackPanel>
+            </GroupBox>
+            <GroupBox x:Name="guicEvent" Header="Selected Event Details" Margin="4" Grid.Row="1">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" Content="Date:"/>
+                    <Label Grid.Column="0" Grid.Row="1" Content="Start Time:"/>
+                    <Label Grid.Column="0" Grid.Row="2" Content="End Time:"/>
+                    <Label Grid.Column="0" Grid.Row="3" Content="Title:"/>
+                    <Label Grid.Column="0" Grid.Row="4" Content="Description:"/>
+                    <TextBlock Grid.Column="1" Grid.Row="0" Text="{Binding Start, StringFormat={}{0:D}}"/>
+                    <TextBlock Grid.Column="1" Grid.Row="1" Text="{Binding Start, StringFormat={}{0:t}}"/>
+                    <TextBlock Grid.Column="1" Grid.Row="2" Text="{Binding End, StringFormat={}{0:t}}"/>
+                    <TextBlock Grid.Column="1" Grid.Row="3" Text="{Binding Title}"/>
+                    <TextBlock Grid.Column="1" Grid.Row="4" Text="{Binding Description}"/>
+                </Grid>
+            </GroupBox>
+            <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="4">
+                <Button Content="New Event" x:Name="guifEventNew" Click="GuifEventNew_Click" Margin="8,0,0,0"/>
+                <Button Content="Delete Event" x:Name="guifEventDelete" Click="GuifEventDelete_Click" Margin="8,0,0,0" IsEnabled="False"/>
+            </StackPanel>
+            <GroupBox x:Name="guicEventEdit" Header="New Event" Margin="4" Grid.Row="3">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Label Grid.Column="0" Grid.Row="0" Content="Date:"/>
+                    <Label Grid.Column="0" Grid.Row="1" Content="Start Time:"/>
+                    <Label Grid.Column="0" Grid.Row="2" Content="End Time:"/>
+                    <Label Grid.Column="0" Grid.Row="3" Content="Title:"/>
+                    <Label Grid.Column="0" Grid.Row="4" Content="Description:"/>
+                    <DatePicker x:Name="guiEventEditDate" Grid.Column="1" Grid.Row="0"/>
+                    <TextBox x:Name="guiEventEditStart" Grid.Column="1" Grid.Row="1"/>
+                    <TextBox x:Name="guiEventEditEnd" Grid.Column="1" Grid.Row="2"/>
+                    <TextBox x:Name="guiEventEditTitle" Grid.Column="1" Grid.Row="3"/>
+                    <TextBox x:Name="guiEventEditDesc" Grid.Column="1" Grid.Row="4"/>
+                    <Button x:Name="guiEventEditSave" Click="GuiEventEditSave_Click" Grid.Column="1" Grid.Row="5" Content="Save" HorizontalAlignment="Left" Width="100"/>
+                </Grid>
+            </GroupBox>
+        </Grid>
     </Grid>
 </Window>

@@ -50,12 +50,14 @@ namespace WpfSchedule
                 darkTheme = value;
                 if(darkTheme) {
                     _guicGridTimeline.BorderBrush = Brushes.AntiqueWhite;
+                    _guicTop.BorderBrush = Brushes.AntiqueWhite;
                     ScheduleItem.DefaultBorderColor = Brushes.AntiqueWhite;
                     foreach(ScheduleItem item in Items) {
                         item.Panel.BorderBrush = Brushes.AntiqueWhite;
                     }
                 } else {
                     _guicGridTimeline.BorderBrush = Brushes.Black;
+                    _guicTop.BorderBrush = Brushes.Black;
                     ScheduleItem.DefaultBorderColor = Brushes.Black;
                     foreach(ScheduleItem item in Items) {
                         item.Panel.BorderBrush = Brushes.Black;
@@ -104,6 +106,9 @@ namespace WpfSchedule
             double totalSeconds = TimeEnd.TotalSeconds - TimeStart.TotalSeconds;
             item.GeneratePanel(guicCanvas[(int)item.Start.DayOfWeek].ActualWidth, guicCanvas[(int)item.Start.DayOfWeek].ActualHeight, TimeStart.TotalSeconds, TimeEnd.TotalSeconds, totalSeconds);
             Items.Add(item);
+            if(item.Start >= CurrentDate.Add(TimeStart) && item.Start < CurrentDate.Add(TimeEnd)) {
+                guicCanvas[(int)item.Start.DayOfWeek].Children.Add(item.Panel);
+            }
         }
 
         public void Remove(ScheduleItem item)
@@ -148,8 +153,9 @@ namespace WpfSchedule
             }
 
             int StartItem = Items.FindIndex(x => x.Start >= CurrentDate.Add(TimeStart));
+            DateTime enddate = CurrentDate.Add(new TimeSpan(6, 0, 0, 0)).Add(TimeEnd);
             if(StartItem > -1) {
-                for(int i = StartItem; i < Items.Count && Items[i].Start < CurrentDate.Add(TimeEnd); i++) {
+                for(int i = StartItem; i < Items.Count && Items[i].Start < enddate; i++) {
                     guicCanvas[(int)Items[i].Start.DayOfWeek].Children.Add(Items[i].Panel);
                 }
             }
